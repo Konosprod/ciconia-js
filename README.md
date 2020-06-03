@@ -7,7 +7,7 @@ New implementation for my Ciconia service, nodejs inside because why not.
 ## Setup node server
 
 * Setup the database with the .sql
-* Copy and rename `production.json` into `local.json` and fill the blanks
+* Copy and rename `config/production.json` into `config/local.json` and fill the blanks
 * Launch the server with `node src` at the root of the project
 * Add an user by sending a post request to the `/register` endpoint
 
@@ -17,6 +17,7 @@ New implementation for my Ciconia service, nodejs inside because why not.
 ### Request tab
 
 * Edit settings and custom upload service
+* Set `POST` method
 * Add header `apikey` and set the value with the user api key you can get in the database
 * Add header `username` set the correspond username
 * The body must be `Form data (multipart/form-data)`
