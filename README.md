@@ -67,6 +67,34 @@ then, create a user to login to the app like so
 
 You can also use a tool like [Insomnia](https://insomnia.rest/) if you prefer (recommended for debugging).
 
+Lastly, `npm install`
+
+## Setting up Angular
+
+This project uses angular. You should have this module installed globally on your system as shown in [the official documentation](https://angular.io/guide/setup-local), or you want be able to start angular dev server
+To install angular, do :
+`npm install -g @angular/cli`
+
+If you run into a permission issue doing this, **DO NOT USE SUDO**, this is bad for your system !
+[follow this guide instead](https://docs.npmjs.com/resolving-eacces-permissions-errors-when-installing-packages-globally)
+
+in the simpler cases, you just need to do this
+
+```
+nvm install node # "node" is an alias for the latest version
+nvm use node # use node latest version in this bash
+nvm install-latest-npm
+```
+
+try reinstalling angular globally after this, and it should work fine.
+
+Lastly, do :
+```
+cd front
+npm install
+cd ../
+```
+
 ## Setting up sharex to use our app
 
 ### Request tab
@@ -89,9 +117,18 @@ Later, everything will be smoother, with preconfigurer config-files & stuff, but
 
 # Running dev environnement
 
-Just do `node src` from project root
+To start the node API, do
+`node src`
 
-If you get an error like "express not found", you should probably do `npm install`:)
+API will listen on `localhost:3000`
+
+To start the front, do
+```
+cd front
+ng serve
+```
+
+front dev server will listen on `localhost:4200`
 
 # Known issue
 
