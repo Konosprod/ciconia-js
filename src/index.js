@@ -109,11 +109,30 @@ function generateThumbs(req) {
 
 app.post("/", authentication, upload.single("f"), (req, res, next) => {
     generateThumbs(req);
-    res.json({url:basename+"/push/" + makeid(config.get("short_url_length"))});
+
+    var urlId = makeid(config.get("short_url_length"));
+
+    connection.query("SELECT id FROM users WHERE username = ?", req.header("username"), function(err, result) {
+        if(err)
+            throw err;
+
+            var push = {
+                url: urlId,
+                path: req.file.path,
+                owner: result[0].id
+            };
+
+            connection.query("INSERT INTO push SET ?", push, function(err, res) {
+                if(err)
+                    throw err;
+            })
+    });
+
+    res.json({url:basename+"/push/" + urlId});
 });
 
 app.get("/push/$id", (req, res) => {
-
+    
 });
 
 app.post("/register", jsonparser, function(req, res) {
