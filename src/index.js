@@ -27,7 +27,7 @@ var connection = mysql.createConnection({
     host: config.get("db.host"),
     user: config.get("db.user"),
     password: config.get("db.password"),
-    database: config.get("database")
+    database: config.get("db.database")
 });
 
 var basename = config.get("baseurl");
