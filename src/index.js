@@ -11,7 +11,8 @@ const path  = require("path");
 const config = require("config");
 
 const app = express();
-const port = 3000;
+const port = config.get("port");
+
 const imageType = [
     "image/jpeg",
     "image/png",
@@ -20,14 +21,13 @@ const imageType = [
     "image/gif"
 ];
 
-
 var jsonparser = bodyparser.json();
 
 var connection = mysql.createConnection({
-    host: "localhost",
-    user: "root",
-    password: "test123",
-    database: "ciconia"
+    host: config.get("db.host"),
+    user: config.get("db.user"),
+    password: config.get("db.password"),
+    database: config.get("database");
 });
 
 var basename = config.get("baseurl");
@@ -44,7 +44,7 @@ const storage = multer.diskStorage({
         const year = date.getFullYear();
         const month = date.getMonth();
         const userid = req.header("apikey");
-        const dest = `./uploads/${userid}/${year}/${month}`;
+        const dest = path.join(config.get("base_uploads_directory"), userid, year, month);
 
         if (!fs.existsSync(dest))
         {
@@ -98,7 +98,7 @@ function generateThumbs(req) {
 
         var filename = path.basename(req.file.path);
 
-        sharp(req.file.path).resize(200, 200, optionsResize).toFile(path.join(pathfile, filename), (err) => {
+        sharp(req.file.path).resize(config.get("thumbnail.x"), config.get("thumbnail.y"), optionsResize).toFile(path.join(pathfile, filename), (err) => {
             if(err)
                 throw err;
         });
@@ -109,7 +109,7 @@ function generateThumbs(req) {
 
 app.post("/", authentication, upload.single("f"), (req, res, next) => {
     generateThumbs(req);
-    res.json({url:basename+"/push/" + makeid(8)});
+    res.json({url:basename+"/push/" + makeid(config.get("short_url_length"))});
 });
 
 app.get("/push/$id", (req, res) => {
