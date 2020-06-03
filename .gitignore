@@ -107,4 +107,4 @@ dist
 ./uploads/
 
 #local configs
-.config/local.json
+.config/*
