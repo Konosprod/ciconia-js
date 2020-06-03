@@ -44,7 +44,7 @@ const storage = multer.diskStorage({
         const year = date.getFullYear();
         const month = date.getMonth();
         const userid = req.header("apikey");
-        const dest = path.join(config.get("base_uploads_directory"), userid, year, month);
+        const dest = path.join(config.get("base_upload_directory"), userid, year, month);
 
         if (!fs.existsSync(dest))
         {
