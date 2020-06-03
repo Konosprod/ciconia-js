@@ -91,6 +91,8 @@ Later, everything will be smoother, with preconfigurer config-files & stuff, but
 
 Just do `node src` from project root
 
+If you get an error like "express not found", you should probably do `npm install`:)
+
 # Known issue
 
 * None
