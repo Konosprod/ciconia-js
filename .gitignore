@@ -104,7 +104,7 @@ dist
 .tern-port
 
 #upload directory
-./uploads/
+/uploads
 
 #local configs
-.config/*
+/config/local*.json
