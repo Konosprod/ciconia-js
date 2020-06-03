@@ -1,4 +1,4 @@
-# ciconia-js
+# Ciconia-js
 
 New implementation for my Ciconia service, nodejs inside because why not.
 
@@ -17,7 +17,7 @@ sudo apt install npm
 sudo apt install curl
 ```
 
-## setting up the database
+## Setting up the database
 
 Start mysql server if not already
 `sudo service mysql start`
@@ -35,7 +35,7 @@ EXIT;
 Lastly, import dummy database :
 `mysql < config/database.sql`
 
-## setting up the node server
+## Setting up the node server
 
 create folder for uploads :
 `mkdir uploads`
@@ -67,7 +67,7 @@ then, create a user to login to the app like so
 
 You can also use a tool like [Insomnia](https://insomnia.rest/) if you prefer (recommended for debugging).
 
-## setting up sharex to use our app
+## Setting up sharex to use our app
 
 ### Request tab
 
