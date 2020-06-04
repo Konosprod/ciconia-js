@@ -11,6 +11,12 @@
         "database": "changeme"
     },
 
+    "log" : {
+        "level": "info",
+        "error_path" : "./logs/error.log",
+        "combined_path" : "./logs/log.log"
+    },
+
     "thumbnail": {
         "x": 200,
         "y": 200

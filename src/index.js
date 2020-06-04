@@ -9,6 +9,7 @@ const fs = require("fs-extra");
 const sharp = require("sharp");
 const path  = require("path");
 const config = require("config");
+const winston = require("winston");
 
 const app = express();
 const port = config.get("port");
@@ -21,9 +22,30 @@ const imageType = [
     "image/gif"
 ];
 
-var jsonparser = bodyparser.json();
+const jsonparser = bodyparser.json();
 
-var connection = mysql.createConnection({
+const logFormat = winston.format.combine(
+    winston.format.timestamp(),
+    winston.format.align(),
+    winston.format.printf(({ level, message, label, timestamp }) => {
+        return `${timestamp} [${label}] ${level}: ${message}`;
+      })
+);
+
+const logger = winston.createLogger({
+    level: config.get("log.level"),
+    format: logFormat,
+    defaultMeta: {
+        label: 'ciconia-js'
+    },
+    transports: [
+        new winston.transports.File({filename: config.get("log.error_path"), level:"error"}),
+        new winston.transports.File({filename: config.get("log.combined_path")}),
+        new winston.transports.Console()
+    ]
+})
+
+const connection = mysql.createConnection({
     host: config.get("db.host"),
     user: config.get("db.user"),
     password: config.get("db.password"),
@@ -31,10 +53,11 @@ var connection = mysql.createConnection({
     multipleStatements: true
 });
 
-var basename = config.get("baseurl");
+const basename = config.get("baseurl");
 
 connection.connect(function(err) {
     if(err) {
+        logger.error(err)
         throw err;
     }
 });
@@ -61,23 +84,32 @@ const storage = multer.diskStorage({
     }
 });
 
-var upload = multer({
+const upload = multer({
     storage: storage
 });
 
-var authentication = function(req, res, next) {
+const authentication = function(req, res, next) {
     if(req.header("apikey") && req.header("username")) {
-        var query  = "SELECT apikey FROM users WHERE username = ?";
+        let username = req.header("username")
+        let apikey = req.header("apikey")
 
-        connection.query(query, req.header("username"), function(err, res) {
-            if(err)
+        let query  = "SELECT apikey FROM users WHERE username = ?";
+
+        connection.query(query, username, function(err, res) {
+            if(err) {
+                logger.error(err);
                 throw err;
+            }
             //If no user was found, or apikey mismatch, error
-            if(res.length <= 0 || res[0].apikey != req.header("apikey")) {
+            if(res.length <= 0 || res[0].apikey != apikey) {
                 var err = new Error(`${req.ip} tried to access ${req.originalUrl} without being authenticated`)
-                err.statusCode = 403
+                err.statusCode = 403;
+
+                logger.warning(err);
+                
                 next(err);
             } else {
+                logger.info(`username : ${username} ; apikey : ${apikey} auth successful`)
                 next();
             }
         })
@@ -85,24 +117,30 @@ var authentication = function(req, res, next) {
     } else {
         var err = new Error(`${req.ip} tried to access ${req.originalUrl} without being authenticated`)
         err.statusCode = 403;
+
+        logger.warning(err);
+
         next(err);
     }
 };
 
 function checkDatabase() {
+    logger.debug("Checking database");
     var query = fs.readFileSync("./config/database.sql", "utf-8");
     connection.query(query, function(err) {
-        if(err)
+        if(err) {
+            logger.error(err);
             throw err;
+        }
     })
 }
 
 function makeid(length) {
-    var result = '';
-    var characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
-    var charactersLength = characters.length;
+    let result = '';
+    const characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+    const charactersLength = characters.length;
     
-    for (var i = 0; i < length; i++) {
+    for (let i = 0; i < length; i++) {
         result += characters.charAt(Math.floor(Math.random() * charactersLength));
     }
     
@@ -115,16 +153,20 @@ function generateThumbs(req) {
     };
 
     if(imageType.includes(req.file.mimetype)) {
-        var pathfile = path.join(path.dirname(req.file.path), "thumbs")
+        let pathfile = path.join(path.dirname(req.file.path), "thumbs")
 
         if(!fs.existsSync(path))
             fs.mkdirpSync(pathfile);
 
-        var filename = path.basename(req.file.path);
+        let filename = path.basename(req.file.path);
+        
+        logger.info("Generating thumbnail for file : " + req.file.path);
 
         sharp(req.file.path).resize(config.get("thumbnail.x"), config.get("thumbnail.y"), optionsResize).toFile(path.join(pathfile, filename), (err) => {
-            if(err)
+            if(err) {
+                logger.error(err);
                 throw err;
+            }
         });
     } else {
 
@@ -136,23 +178,33 @@ app.post("/", authentication, upload.single("f"), (req, res, next) => {
 
     var urlId = makeid(config.get("short_url_length"));
 
-    connection.query("SELECT id FROM users WHERE username = ?", req.header("username"), function(err, result) {
-        if(err)
+    connection.query("SELECT id FROM users WHERE username = ?", req.header("username"), function (err, result) {
+        if (err) {
+            logger.error(err);
             throw err;
+        }
 
-            var push = {
-                url: urlId,
-                path: req.file.path,
-                owner: result[0].id
-            };
+        let push = {
+            url: urlId,
+            path: req.file.path,
+            owner: result[0].id
+        };
 
-            connection.query("INSERT INTO push SET ?", push, function(err, res) {
-                if(err)
-                    throw err;
-            })
+        logger.debug("Generated push : " + JSON.stringify(push));
+
+        connection.query("INSERT INTO push SET ?", push, function (err, res) {
+            if (err) {
+                logger.error(err);
+                throw err;
+            }
+        })
+
+        logger.info(`Generated URL : ${urlId} for user : ${result[0].id}`);
+
     });
 
-    res.json({url:basename+"/push/" + urlId});
+    res.json({ url: basename + "/push/" + urlId });
+    next();
 });
 
 app.get("/push/$id", (req, res) => {
@@ -160,12 +212,17 @@ app.get("/push/$id", (req, res) => {
 });
 
 app.post("/register", jsonparser, function(req, res) {
-    if(!req.body) 
+
+    if(!req.body) {
+        logger.warning(`${req.ip} tried to register without sending json payload`)
         return res.sendStatus(404);
+    }
 
     crypto.randomBytes(32, function(err, salt) {
-        if(err)
+        if(err) {
+            logger.error(err);
             throw err;
+        }
         
         argon2.hash(req.body.password, salt).then(hash => {
             var user = {
@@ -173,19 +230,25 @@ app.post("/register", jsonparser, function(req, res) {
                 password : hash,
                 apikey : uuid.v4()
             };
-
+            
             connection.query("INSERT INTO users SET ?", user, function(err, res) {
-                if(err)
+                if(err) {
+                    logger.error(err)
                     throw err;
+                }
             });
 
             res.sendStatus(201);
+
+            logger.info(`${req.ip} sucessfully registered : `);
+            logger.debug(JSON.stringify(user));
+
         })
     });
 });
 
 
 app.listen(port, () => {
-    console.log(`Listening on port ${port}`)
+    logger.info(`Listening on port ${port}`)
     checkDatabase();
 });
