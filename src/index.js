@@ -27,7 +27,8 @@ var connection = mysql.createConnection({
     host: config.get("db.host"),
     user: config.get("db.user"),
     password: config.get("db.password"),
-    database: config.get("db.database")
+    database: config.get("db.database"),
+    multipleStatements: true
 });
 
 var basename = config.get("baseurl");
@@ -37,6 +38,7 @@ connection.connect(function(err) {
         throw err;
     }
 });
+
 
 const storage = multer.diskStorage({
     destination: function(req, file, cb) {
@@ -72,6 +74,14 @@ var authentication = function(req, res, next) {
         next(err);
     }
 };
+
+function checkDatabase() {
+    var query = fs.readFileSync("./config/database.sql", "utf-8");
+    connection.query(query, function(err) {
+        if(err)
+            throw err;
+    })
+}
 
 function makeid(length) {
     var result = '';
@@ -161,4 +171,7 @@ app.post("/register", jsonparser, function(req, res) {
 });
 
 
-app.listen(port, () => console.log(`Listening on port ${port}`));
+app.listen(port, () => {
+    console.log(`Listening on port ${port}`)
+    checkDatabase();
+});

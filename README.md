@@ -32,8 +32,6 @@ CREATE USER 'ciconia'@'localhost' IDENTIFIED BY 'ciconia';
 GRANT ALL PRIVILEGES ON ciconia . * TO 'ciconia'@'localhost';
 EXIT;
 ```
-Lastly, import dummy database :
-`mysql < config/database.sql`
 
 ## Setting up the node server
 
