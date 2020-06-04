@@ -67,7 +67,21 @@ var upload = multer({
 
 var authentication = function(req, res, next) {
     if(req.header("apikey") && req.header("username")) {
-        return next();
+        var query  = "SELECT apikey FROM users WHERE username = ?";
+
+        connection.query(query, req.header("username"), function(err, res) {
+            if(err)
+                throw err;
+            //If no user was found, or apikey mismatch, error
+            if(res.length <= 0 || res[0].apikey != req.header("apikey")) {
+                var err = new Error(`${req.ip} tried to access ${req.originalUrl} without being authenticated`)
+                err.statusCode = 403
+                next(err);
+            } else {
+                next();
+            }
+        })
+
     } else {
         var err = new Error(`${req.ip} tried to access ${req.originalUrl} without being authenticated`)
         err.statusCode = 403;
