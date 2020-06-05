@@ -1,0 +1,11 @@
+@use "@material/icon-button/mdc-icon-button.scss";
+@use "@material/top-app-bar/mdc-top-app-bar.scss";
+
+.app-body{
+    padding-top:70px;
+    min-height:calc(100vh - 70px);
+    display:flex;
+    justify-content: center;
+    align-items: center;
+    background-color:#ded9ee;
+}
