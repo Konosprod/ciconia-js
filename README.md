@@ -128,6 +128,15 @@ ng serve
 
 front dev server will listen on `localhost:4200`
 
+# Api doc
+
+| Route | Method | Data | Result |
+| ----- | ------ | ---- | ------ |
+| /login | POST | `{"username":"user", "password":"pass"}` | either redirected or `{"status": "error", "message":"Invalid user or password"}` |
+| /logout | GET | NONE | Redirected |
+| /register | POST | `{"username":"user", "password":"pass"}` | `{"status":"ok"}`|
+| / | POST | See [this section](#request-tab) to set the correct variables | `{"url": "generated url"}` | 
+
 # Known issue
 
 * None
