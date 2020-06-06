@@ -248,7 +248,7 @@ app.post("/", authentication, upload.single("f"), (req, res, next) => {
 
         let push = {
             url: urlId,
-            path: req.file.path,
+            path: path.resolve(req.file.path),
             owner: result[0].id
         };
 
@@ -270,7 +270,7 @@ app.post("/", authentication, upload.single("f"), (req, res, next) => {
     next();
 });
 
-app.get("/push/:id(\\w{10})/", (req, res, next) => {
+app.get("/push/:id(\\w{"+config.get("short_url_length")+"})/", (req, res, next) => {
     let id = req.params.id;
     let sql = "SELECT path FROM push WHERE url = ?";
 
@@ -280,9 +280,13 @@ app.get("/push/:id(\\w{10})/", (req, res, next) => {
             next(err);
             throw err;
         }
-//TODO: SEND TO PEOPLE
 
-        //res.setHeader("Content-Type", )
+        if(result.length <= 0) {
+            logger.warning(`Push ${id} not found`);
+            res.sendStatus(404);
+        } else {
+            res.sendFile(result[0].path);
+        }
     })
 });
 
