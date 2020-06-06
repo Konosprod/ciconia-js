@@ -20,5 +20,10 @@
     "thumbnail": {
         "x": 200,
         "y": 200
+    },
+
+    "session" : {
+        "secret": "changeme",
+        "cookiesecure": false 
     }
 }

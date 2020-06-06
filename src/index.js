@@ -32,7 +32,12 @@ const storeOptions = {
             expires : "expires",
             data: "data" 
         }
-    }
+    },
+    endConnectionOnClose: true,
+    clearExpired: true,
+    checkExpirationInterval: 90000,
+    expiration: 86400000,
+    createDatabaseTable: true
 }
 
 
@@ -78,6 +83,20 @@ connection.connect(function(err) {
 
 const sessionStore = new MySQLStore(storeOptions, connection)
 
+app.set("trust proxy", 1);
+
+app.use(session({
+    secret: config.get("session.secret"),
+    resave: false,
+    saveUninitialized: false,
+    cookie: {
+        httpOnly : false,
+        sameSite: true,
+        secure: config.get("session.cookiesecure")
+    },
+    store: sessionStore,
+    unset: 'destroy'
+}))
 
 const storage = multer.diskStorage({
     destination: function(req, file, cb) {
@@ -153,7 +172,7 @@ const authentication = function(req, res, next) {
             }
         })
       //Authenticate via session
-    } else if (req.session.logged === true) {
+    } else if (req.session.logged == true) {
         next();
         
     } else {
@@ -223,6 +242,7 @@ app.post("/", authentication, upload.single("f"), (req, res, next) => {
     connection.query("SELECT id FROM users WHERE username = ?", req.header("username"), function (err, result) {
         if (err) {
             logger.error(err);
+            next(err);
             throw err;
         }
 
@@ -237,6 +257,7 @@ app.post("/", authentication, upload.single("f"), (req, res, next) => {
         connection.query("INSERT INTO push SET ?", push, function (err, res) {
             if (err) {
                 logger.error(err);
+                next(err);
                 throw err;
             }
         })
@@ -249,21 +270,23 @@ app.post("/", authentication, upload.single("f"), (req, res, next) => {
     next();
 });
 
-app.get("/push/:id(\\w{10})/", (req, res) => {
+app.get("/push/:id(\\w{10})/", (req, res, next) => {
     let id = req.params.id;
     let sql = "SELECT path FROM push WHERE url = ?";
 
     connection.query(sql, id, (err, result) => {
         if(err) {
             logger.error(err);
+            next(err);
             throw err;
         }
+//TODO: SEND TO PEOPLE
 
-        res.setHeader("Content-Type", )
+        //res.setHeader("Content-Type", )
     })
 });
 
-app.post("/register", jsonparser, function(req, res) {
+app.post("/register", jsonparser, function(req, res, next) {
 
     if(!req.body) {
         logger.warning(`${req.ip} tried to register without sending json payload`)
@@ -273,6 +296,7 @@ app.post("/register", jsonparser, function(req, res) {
     crypto.randomBytes(32, function(err, salt) {
         if(err) {
             logger.error(err);
+            next(err);
             throw err;
         }
         
@@ -285,12 +309,13 @@ app.post("/register", jsonparser, function(req, res) {
             
             connection.query("INSERT INTO users SET ?", user, function(err, res) {
                 if(err) {
-                    logger.error(err)
+                    logger.error(err);
+                    next(err);
                     throw err;
                 }
             });
 
-            res.sendStatus(201);
+            res.status(201).jsonjson({status: "ok"});
 
             logger.info(`${req.ip} sucessfully registered : `);
             logger.debug(JSON.stringify(user));
@@ -299,6 +324,35 @@ app.post("/register", jsonparser, function(req, res) {
     });
 });
 
+app.post("/login", jsonparser, function(req, res, next) {
+    let username = req.body.username;
+    let password = req.body.password;
+    let sql = "SELECT password FROM users WHERE username = ?";
+
+    connection.query(sql, username, function(err, result) {
+        if(err) {
+            logger.error(err);
+            next(err);
+            throw err;
+        }
+
+        if(result.length <= 0) {
+            logger.warning(`User : ${username} not found !`);
+            res.statusCode(403).json({status:"error", message:"Invalid user or password"})
+        } else {
+            argon2.verify(result[0].password, password).then(result => {
+                if(result) {
+                    req.session.logged = true;
+                    res.redirect("/");
+                } else  {
+                    logger.warning(`User : ${username} password mismatch`);
+                    res.statusCode(403).json({status:"error", message:"Invalid user or password"})
+                }
+            })
+        }
+    })
+
+})
 
 app.get('*', function(req, res){
     res.status(404).send('what???');
