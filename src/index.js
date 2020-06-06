@@ -354,6 +354,18 @@ app.post("/login", jsonparser, function(req, res, next) {
 
 })
 
+app.get("/logout", jsonparser, function(req, res, next) {
+    req.session.destroy((err) => {
+        if(err) {
+            logger.error(err);
+            next(err);
+            throw err;
+        }
+
+        res.redirect("/");
+    })
+})
+
 app.get('*', function(req, res){
     res.status(404).send('what???');
   });
