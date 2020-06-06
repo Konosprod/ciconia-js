@@ -12,7 +12,7 @@ const config = require("config");
 const winston = require("winston");
 const session = require("express-session");
 const MySQLStore = require("express-mysql-session")(session);
-
+const mimetype = require("mime-types");
 const app = express();
 const port = config.get("port");
 
@@ -96,7 +96,28 @@ const storage = multer.diskStorage({
     },
 
     filename: function(req, file, cb) {
-        cb(null, file.originalname);
+        
+        let filename = file.originalname;
+
+        const date = new Date();
+        const year = date.getFullYear();
+        const month = date.getMonth();
+        const userid = req.header("apikey");
+
+        var filepath = path.join(config.get("base_upload_directory"), userid, year.toString(), month.toString(), filename);
+
+        var nb = 0
+        const extension = path.extname(file.originalname);
+        const basefilename = path.basename(file.originalname, extension);
+
+        while(fs.existsSync(filepath)) {
+
+            filename = basefilename + "_" + nb.toString() + extension;
+            filepath = path.join(config.get("base_upload_directory"), userid, year.toString(), month.toString(), filename)
+            nb++;
+        }
+
+        cb(null, filename);
     }
 });
 
@@ -173,7 +194,7 @@ function generateThumbs(req) {
         fit: sharp.fit.outside
     };
 
-    if(imageType.includes(req.file.mimetype)) {
+    if(imageType.includes(mimetype.lookup(req.file.path))) {
         let pathfile = path.join(path.dirname(req.file.path), "thumbs")
 
         if(!fs.existsSync(path))
@@ -228,8 +249,18 @@ app.post("/", authentication, upload.single("f"), (req, res, next) => {
     next();
 });
 
-app.get("/push/$id", (req, res) => {
-    
+app.get("/push/:id(\\w{10})/", (req, res) => {
+    let id = req.params.id;
+    let sql = "SELECT path FROM push WHERE url = ?";
+
+    connection.query(sql, id, (err, result) => {
+        if(err) {
+            logger.error(err);
+            throw err;
+        }
+
+        res.setHeader("Content-Type", )
+    })
 });
 
 app.post("/register", jsonparser, function(req, res) {
@@ -268,6 +299,10 @@ app.post("/register", jsonparser, function(req, res) {
     });
 });
 
+
+app.get('*', function(req, res){
+    res.status(404).send('what???');
+  });
 
 app.listen(port, () => {
     logger.info(`Listening on port ${port}`)
