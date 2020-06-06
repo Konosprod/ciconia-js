@@ -10,6 +10,8 @@ const sharp = require("sharp");
 const path  = require("path");
 const config = require("config");
 const winston = require("winston");
+const session = require("express-session");
+const MySQLStore = require("express-mysql-session")(session);
 
 const app = express();
 const port = config.get("port");
@@ -21,6 +23,18 @@ const imageType = [
     "image/bmp",
     "image/gif"
 ];
+
+const storeOptions = {
+    schema: {
+        tableName: 'sessions',
+        columnNames: {
+            session_id : "session_id",
+            expires : "expires",
+            data: "data" 
+        }
+    }
+}
+
 
 const jsonparser = bodyparser.json();
 
@@ -62,6 +76,8 @@ connection.connect(function(err) {
     }
 });
 
+const sessionStore = new MySQLStore(storeOptions, connection)
+
 
 const storage = multer.diskStorage({
     destination: function(req, file, cb) {
@@ -89,6 +105,8 @@ const upload = multer({
 });
 
 const authentication = function(req, res, next) {
+
+    //Authenciate via headers
     if(req.header("apikey") && req.header("username")) {
         let username = req.header("username")
         let apikey = req.header("apikey")
@@ -113,7 +131,10 @@ const authentication = function(req, res, next) {
                 next();
             }
         })
-
+      //Authenticate via session
+    } else if (req.session.logged === true) {
+        next();
+        
     } else {
         var err = new Error(`${req.ip} tried to access ${req.originalUrl} without being authenticated`)
         err.statusCode = 403;
