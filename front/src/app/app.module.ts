@@ -9,6 +9,8 @@ import { TextFieldComponent } from './components/text-field/text-field.component
 import { CheckboxComponent } from './components/checkbox/checkbox.component';
 import { ButtonComponent } from './components/button/button.component';
 import { PasswordFieldComponent } from './components/password-field/password-field.component';
+import { GalleryComponent } from './gallery/gallery.component';
+import { NotFoundComponent } from './not-found/not-found.component';
 
 @NgModule({
    declarations: [
@@ -18,7 +20,9 @@ import { PasswordFieldComponent } from './components/password-field/password-fie
       TextFieldComponent,
       CheckboxComponent,
       ButtonComponent,
-      PasswordFieldComponent
+      PasswordFieldComponent,
+      GalleryComponent,
+      NotFoundComponent
    ],
    imports: [
       BrowserModule,
