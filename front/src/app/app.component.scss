@@ -3,9 +3,9 @@
 
 .app-body{
     padding-top:70px;
-    min-height:calc(100vh - 70px);
+    height:calc(100vh - 70px);
     display:flex;
     justify-content: center;
-    align-items: center;
     background-color:#ded9ee;
+    overflow:scroll;
 }

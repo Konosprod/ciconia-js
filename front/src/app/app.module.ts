@@ -11,6 +11,7 @@ import { ButtonComponent } from './components/button/button.component';
 import { PasswordFieldComponent } from './components/password-field/password-field.component';
 import { GalleryComponent } from './gallery/gallery.component';
 import { NotFoundComponent } from './not-found/not-found.component';
+import { GalleryItemComponent } from './gallery/gallery-item/gallery-item.component';
 
 @NgModule({
    declarations: [
@@ -22,7 +23,8 @@ import { NotFoundComponent } from './not-found/not-found.component';
       ButtonComponent,
       PasswordFieldComponent,
       GalleryComponent,
-      NotFoundComponent
+      NotFoundComponent,
+      GalleryItemComponent
    ],
    imports: [
       BrowserModule,
