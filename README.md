@@ -132,9 +132,12 @@ front dev server will listen on `localhost:4200`
 
 | Route | Method | Data | Result |
 | ----- | ------ | ---- | ------ |
-| /login | POST | `{"username":"user", "password":"pass"}` | either redirected or `{"status": "error", "message":"Invalid user or password"}` |
+| /login | POST | `{"username":"user", "password":"pass"}` | either `{"status":"ok"}` or `{"status": "error", "message":"Invalid user or password"}` |
 | /logout | GET | NONE | Redirected |
 | /register | POST | `{"username":"user", "password":"pass"}` | `{"status":"ok"}`|
+| /push/[id] | GET | NONE | File associated with this URL |
+| /push/thumbs/[id] | NONE | Thumbnail associated with this URL |
+| /gallery | POST | `{limit: 10, offset: 0}` | Return 10 last push from an user with this form `{"url":[id], "mime":"mimetype"}` |
 | / | POST | See [this section](#request-tab) to set the correct variables | `{"url": "generated url"}` | 
 
 # Known issue
