@@ -11,6 +11,7 @@ CREATE TABLE IF NOT EXISTS `push` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `url` varchar(50) NOT NULL,
   `path` varchar(250) NOT NULL,
+  `mime` varchar(250) NOT NULL,
   `owner` int(11) NOT NULL DEFAULT 0,
   UNIQUE KEY `url` (`url`),
   KEY `id` (`id`) USING BTREE,

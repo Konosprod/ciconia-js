@@ -163,7 +163,7 @@ const authentication = function(req, res, next) {
                 var err = new Error(`${req.ip} tried to access ${req.originalUrl} without being authenticated`)
                 err.statusCode = 403;
 
-                logger.warning(err);
+                logger.warn(err);
                 
                 next(err);
             } else {
@@ -172,14 +172,14 @@ const authentication = function(req, res, next) {
             }
         })
       //Authenticate via session
-    } else if (req.session.logged == true) {
+    } else if (req.session.hasOwnProperty("logged") && req.session.logged == true) {
         next();
         
     } else {
         var err = new Error(`${req.ip} tried to access ${req.originalUrl} without being authenticated`)
         err.statusCode = 403;
 
-        logger.warning(err);
+        logger.warn(err);
 
         next(err);
     }
@@ -249,6 +249,7 @@ app.post("/", authentication, upload.single("f"), (req, res, next) => {
         let push = {
             url: urlId,
             path: path.resolve(req.file.path),
+            mime: mimetype.lookup(path.resolve(req.file.path)),
             owner: result[0].id
         };
 
@@ -264,14 +265,14 @@ app.post("/", authentication, upload.single("f"), (req, res, next) => {
 
         logger.info(`Generated URL : ${urlId} for user : ${result[0].id}`);
 
+        res.json({ url: basename + "/push/" + urlId });
+        next();
     });
-
-    res.json({ url: basename + "/push/" + urlId });
-    next();
 });
 
-app.get("/push/:id(\\w{"+config.get("short_url_length")+"})/", (req, res, next) => {
+app.get("/push/:thumbs?/:id(\\w{"+config.get("short_url_length")+"})/", (req, res, next) => {
     let id = req.params.id;
+    let isthumbs = (req.params.hasOwnProperty("thumbs") && req.params.thumbs);
     let sql = "SELECT path FROM push WHERE url = ?";
 
     connection.query(sql, id, (err, result) => {
@@ -282,10 +283,20 @@ app.get("/push/:id(\\w{"+config.get("short_url_length")+"})/", (req, res, next) 
         }
 
         if(result.length <= 0) {
-            logger.warning(`Push ${id} not found`);
+            logger.warn(`Push ${id} not found`);
             res.sendStatus(404);
         } else {
-            res.sendFile(result[0].path);
+
+            if(!isthumbs) {
+                res.sendFile(result[0].path);
+            } else {
+                let basepath = path.dirname(result[0].path);
+                let filename = path.basename(result[0].path);
+                let filepath = path.join(basepath, "thumbs", filename);
+
+                res.sendFile(filepath);
+
+            }
         }
     })
 });
@@ -293,7 +304,7 @@ app.get("/push/:id(\\w{"+config.get("short_url_length")+"})/", (req, res, next) 
 app.post("/register", jsonparser, function(req, res, next) {
 
     if(!req.body) {
-        logger.warning(`${req.ip} tried to register without sending json payload`)
+        logger.warn(`${req.ip} tried to register without sending json payload`)
         return res.sendStatus(404);
     }
 
@@ -331,27 +342,32 @@ app.post("/register", jsonparser, function(req, res, next) {
 app.post("/login", jsonparser, function(req, res, next) {
     let username = req.body.username;
     let password = req.body.password;
-    let sql = "SELECT password FROM users WHERE username = ?";
+    let sql = "SELECT password, id FROM users WHERE username = ?";
 
-    connection.query(sql, username, function(err, result) {
+    connection.query(sql, username, function(err, results) {
         if(err) {
             logger.error(err);
             next(err);
             throw err;
         }
 
-        if(result.length <= 0) {
-            logger.warning(`User : ${username} not found !`);
+        if(results.length <= 0) {
+            logger.warn(`User : ${username} not found !`);
             res.statusCode(403).json({status:"error", message:"Invalid user or password"})
         } else {
-            argon2.verify(result[0].password, password).then(result => {
+            argon2.verify(results[0].password, password).then(result => {
                 if(result) {
                     req.session.logged = true;
-                    res.redirect("/");
+                    req.session.uid = results[0].id;
+                    res.json({status:"ok"});
+                    next();
                 } else  {
-                    logger.warning(`User : ${username} password mismatch`);
+                    logger.warn(`User : ${username} password mismatch`);
                     res.statusCode(403).json({status:"error", message:"Invalid user or password"})
                 }
+            }).catch(err => {
+                logger.error(err);
+                throw err;
             })
         }
     })
@@ -368,6 +384,26 @@ app.get("/logout", jsonparser, function(req, res, next) {
 
         res.redirect("/");
     })
+})
+
+app.post("/gallery", authentication, jsonparser, function(req, res, next) {
+
+    if(!req.body.hasOwnProperty("limit") || !req.body.hasOwnProperty("offset") || !req.session.hasOwnProperty("uid")) {
+        logger.warn("Bad request");
+        res.sendStatus(400);
+    } else {
+        let sql = mysql.format("SELECT url, mime FROM push WHERE owner = ? ORDER BY id DESC LIMIT ? OFFSET ?", [req.session.uid, req.body.limit, req.body.offset]);
+
+        connection.query(sql, function(err, result) {
+            if(err) {
+                logger.error(err);
+                next(err);
+                throw(err);
+            } else {
+                res.json(result);
+            }
+        })
+    }
 })
 
 app.get('*', function(req, res){
