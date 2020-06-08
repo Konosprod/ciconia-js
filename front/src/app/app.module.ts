@@ -12,6 +12,7 @@ import { PasswordFieldComponent } from './components/password-field/password-fie
 import { GalleryComponent } from './gallery/gallery.component';
 import { NotFoundComponent } from './not-found/not-found.component';
 import { GalleryItemComponent } from './gallery/gallery-item/gallery-item.component';
+import { GalleryViewerComponent } from './gallery/gallery-viewer/gallery-viewer.component';
 
 @NgModule({
    declarations: [
@@ -24,7 +25,8 @@ import { GalleryItemComponent } from './gallery/gallery-item/gallery-item.compon
       PasswordFieldComponent,
       GalleryComponent,
       NotFoundComponent,
-      GalleryItemComponent
+      GalleryItemComponent,
+      GalleryViewerComponent
    ],
    imports: [
       BrowserModule,

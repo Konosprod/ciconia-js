@@ -13,5 +13,4 @@ export class GalleryItemComponent implements OnInit {
 
   ngOnInit(): void {
   }
-
 }
