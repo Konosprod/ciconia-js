@@ -1,1 +1,6 @@
-<img src="{{items[current].url}}" alt="">
+<div class="gallery-viewer-wrapper">
+    <div class="prev-button" (click)="prevItem()"></div>
+    <img id="image-{{current.id}}" src="{{items[current].url}}" alt="">
+    <div class="next-button" (click)="nextItem()"></div>
+</div>
+<div class="close-viewer" (click)="close()"></div>
