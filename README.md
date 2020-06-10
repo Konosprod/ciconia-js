@@ -138,7 +138,9 @@ front dev server will listen on `localhost:4200`
 | /push/[id] | GET | NONE | File associated with this URL |
 | /thumbs/[id] | NONE | Thumbnail associated with this URL |
 | /gallery | POST | `{limit: 10, offset: 0}` | Return 10 last push from an user with this form `{"url":[id], "mime":"mimetype"}` |
+| /api | POST | NONE | `{"status":"ok", "key": [new api key]}` |
 | / | POST | See [this section](#request-tab) to set the correct variables | `{"url": "generated url"}` | 
+
 
 # Known issue
 
