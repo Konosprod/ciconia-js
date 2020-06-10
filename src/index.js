@@ -155,7 +155,7 @@ const authentication = function (req, res, next) {
         connection.query(query, username, function (err, res) {
             if (err) {
                 logger.error(err);
-                throw err;
+                next(err);
             }
             //If no user was found, or apikey mismatch, error
             if (res.length <= 0 || res[0].apikey != apikey) {
@@ -260,7 +260,6 @@ app.post("/", authentication, upload.single("f"), (req, res, next) => {
         if (err) {
             logger.error(err);
             next(err);
-            throw err;
         }
 
         let push = {
@@ -276,7 +275,6 @@ app.post("/", authentication, upload.single("f"), (req, res, next) => {
             if (err) {
                 logger.error(err);
                 next(err);
-                throw err;
             }
         })
 
@@ -296,7 +294,6 @@ app.get("/push/:id(\\w{" + config.get("short_url_length") + "})/", (req, res, ne
         if (err) {
             logger.error(err);
             next(err);
-            throw err;
         }
 
         if (result.length <= 0) {
@@ -326,7 +323,6 @@ app.get("/thumbs/:id(\\w{" + config.get("short_url_length") + "})/", (req, res, 
         if (err) {
             logger.error(err);
             next(err);
-            throw err;
         }
 
         if (result.length <= 0) {
@@ -353,7 +349,6 @@ app.post("/register", jsonparser, function (req, res, next) {
         if (err) {
             logger.error(err);
             next(err);
-            throw err;
         }
 
         argon2.hash(req.body.password, salt).then(hash => {
@@ -367,7 +362,6 @@ app.post("/register", jsonparser, function (req, res, next) {
                 if (err) {
                     logger.error(err);
                     next(err);
-                    throw err;
                 }
             });
 
@@ -383,7 +377,7 @@ app.post("/register", jsonparser, function (req, res, next) {
 app.post("/login", jsonparser, function (req, res, next) {
     let username = req.body.username;
     let password = req.body.password;
-    let sql = "SELECT password, id FROM users WHERE username = ?";
+    let sql = "SELECT password, id, apikey FROM users WHERE username = ?";
 
     connection.query(sql, username, function (err, results) {
         if (err) {
@@ -400,6 +394,7 @@ app.post("/login", jsonparser, function (req, res, next) {
                 if (result) {
                     req.session.logged = true;
                     req.session.uid = results[0].id;
+                    req.session.key = results[0].apikey;
                     res.json({ status: "ok" });
                     next();
                 } else {
@@ -408,7 +403,7 @@ app.post("/login", jsonparser, function (req, res, next) {
                 }
             }).catch(err => {
                 logger.error(err);
-                throw err;
+                next(err);
             })
         }
     })
@@ -420,7 +415,6 @@ app.get("/logout", jsonparser, function (req, res, next) {
         if (err) {
             logger.error(err);
             next(err);
-            throw err;
         }
 
         res.redirect("/");
@@ -439,11 +433,35 @@ app.post("/gallery", authentication, jsonparser, function (req, res, next) {
             if (err) {
                 logger.error(err);
                 next(err);
-                throw (err);
             } else {
                 res.json(result);
             }
         })
+    }
+})
+
+app.post("/api", authentication, jsonparser, function(req, res, next) {
+    var newkey = uuid.v4();
+    var oldkey = req.session.key;
+
+    if(req.session.hasOwnProperty("uid")) {
+        var sql = mysql.format("UPDATE users SET apikey = ? WHERE id = ?", [newkey, req.session.uid]);
+
+        connection.query(sql, function(err, results) {
+            if(err) {
+                logger.error(err);
+                next(err);
+            }
+
+            fs.renameSync(path.join(path.resolve(config.get("base_upload_directory")), oldkey), path.join(path.resolve(config.get("base_upload_directory")), newkey));
+            req.session.key = newkey;
+            
+            res.json({status: "ok", key: newkey});
+        })
+
+    } else {
+        res.sendStatus(403);
+        next();
     }
 })
 
