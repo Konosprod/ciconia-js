@@ -3,7 +3,7 @@
         [class.selected]="item === selectedItem"
         *ngFor="let item of itemsData; index as i;"
         [item]="item"
-        (click)="onItemSelect(item)"
+        (click)="onItemSelect(i)"
     ></app-gallery-item>
 </section>
-<app-gallery-viewer [items]="itemsData" [current]="0"></app-gallery-viewer>
+<app-gallery-viewer [current]="0"></app-gallery-viewer>

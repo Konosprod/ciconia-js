@@ -30,13 +30,18 @@ export class GalleryComponent implements AfterViewInit, OnInit {
     this.viewerElement.current = 0;
   }
 
-  onItemSelect(item): void {
-    this.selectedItem = item;
-    this.viewerElement.open(this.selectedItem);
+  onItemSelect(order): void {
+    this.selectedItem = order;
 
-    // blur other elements in the background using utility class
-    // there should be a more "angular" way to do this, with property binding for example...
-    document.querySelector('.mdc-top-app-bar').classList.add('blur');
-    document.querySelector('.gallery-item-list').classList.add('blur');
+    if(!this.viewerElement.isOpen){
+      this.viewerElement.open(this.selectedItem);
+
+      // blur other elements in the background using utility class
+      // there should be a more "angular" way to do this, with property binding for example...
+      document.querySelector('.mdc-top-app-bar').classList.add('blur');
+      document.querySelector('.gallery-item-list').classList.add('blur');
+    }
+
+
   }
 }

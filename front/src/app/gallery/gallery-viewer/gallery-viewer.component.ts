@@ -1,5 +1,7 @@
 import { Component, OnInit, Input, HostBinding } from '@angular/core';
 
+import { GalleryService } from '../../gallery.service'; /* import cart service */
+
 @Component({
   selector: 'app-gallery-viewer',
   templateUrl: './gallery-viewer.component.html',
@@ -9,16 +11,20 @@ export class GalleryViewerComponent implements OnInit {
 
   // this enables the component to update its class list itself based on a condition. Here the condition is a private boolean property.
   // This is the same as using NgClass on a child element
-  @HostBinding('class.open') private isOpen = false; // setting this add/removes 'selected' class
+  @HostBinding('class.open') public isOpen = false; // setting this add/removes 'selected' class
 
   @Input() current;
-  @Input() items;
+  itemsData = []; // data returned by service that fetches the items to display from the api
 
-  constructor() { }
+  constructor(
+    private galleryService: GalleryService // inject gallery service service by adding it to constructor (talks with ciconia api to fetch items to display). otherwise, it won't be available in other methods
+  ) { }
 
   ngOnInit(): void {
     // init viewer as closed
     this.isOpen = false;
+    // fetch data from ciconia gallery service
+    this.itemsData = this.galleryService.getItems();
   }
 
   /**
@@ -26,7 +32,7 @@ export class GalleryViewerComponent implements OnInit {
    * Should display next item in gallery with a nice transition if possible
    */
   nextItem(){
-    alert('next item : TODO :D');
+    this.setCurrent(this.current + 1);
   }
 
   /**
@@ -34,18 +40,40 @@ export class GalleryViewerComponent implements OnInit {
    * Should display previous item in gallery with a nice transition if possible
    */
   prevItem(){
-    alert('prev item : TODO :D');
+    this.setCurrent(this.current - 1);
+  }
+
+  /**
+   * used in this.nextItem and this.prevItem
+   * returns the order of the currently displayed photo
+   */
+  getCurrentItemOrder(){
+    let itemOrder = 0;
+    let current = this.current;
+    this.itemsData.map(function(item, k){
+      if(item.id == current){
+        itemOrder = k;
+      }
+    });
+
+    return itemOrder;
   }
 
   /**
    * Opens the viewer and shows its current item (only supports images for now)
-   * @param item is a ciconia item object as defined in the ciconia gallery service
+   * @param id is an integer representing a ciconia item id
    * handler called when viewer is openned. Will used last current item if not provided, or the first of gallery (as initialized in gallery component)
    */
-  open(item=this.current){
-    this.current = item;
+  open(order=this.current){
+    this.setCurrent(order);
     // thanks to the Host binding above, changing the isOpen property to true adds the "open" class to this component automatically
     this.isOpen = true;
+  }
+
+  setCurrent(order){
+    if(order < 0) order = this.itemsData.length - 1;
+    if(order >= this.itemsData.length) order = 0
+    this.current = order
   }
 
   /**

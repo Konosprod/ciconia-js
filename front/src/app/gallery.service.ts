@@ -14,61 +14,61 @@ export class GalleryService {
   getItems(){
     return [
       {
-        id: 0,
+        id: 14,
         url: "http://placekitten.com/1920/1080",
         thumb: "http://placekitten.com/300/300",
         type: "image"
       },
       {
-        id: 1,
+        id: 21,
         url: "http://placekitten.com/1920/1080",
         thumb: "http://placekitten.com/300/300",
         type: "image"
       },
       {
-        id: 2,
+        id: 22,
         url: "http://placekitten.com/1920/1080",
         thumb: "http://placekitten.com/300/300",
         type: "image"
       },
       {
-        id: 3,
+        id: 70,
         url: "http://placekitten.com/1920/1080",
         thumb: "http://placekitten.com/300/300",
         type: "image"
       },
       {
-        id: 4,
+        id: 47,
         url: "http://placekitten.com/1920/1080",
         thumb: "http://placekitten.com/300/300",
         type: "image"
       },
       {
-        id: 5,
+        id: 94,
         url: "http://placekitten.com/1920/1080",
         thumb: "http://placekitten.com/300/300",
         type: "image"
       },
       {
-        id: 6,
+        id: 61,
         url: "http://placekitten.com/1920/1080",
         thumb: "http://placekitten.com/300/300",
         type: "image"
       },
       {
-        id: 7,
+        id: 70,
         url: "http://placekitten.com/1920/1080",
         thumb: "http://placekitten.com/300/300",
         type: "image"
       },
       {
-        id: 8,
+        id: 84,
         url: "http://placekitten.com/1920/1080",
         thumb: "http://placekitten.com/300/300",
         type: "image"
       },
       {
-        id: 9,
+        id: 98,
         url: "http://placekitten.com/1920/1080",
         thumb: "http://placekitten.com/300/300",
         type: "image"
