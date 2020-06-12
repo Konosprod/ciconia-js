@@ -66,6 +66,17 @@ export class GalleryViewerComponent implements OnInit {
    */
   open(order=this.current){
     this.setCurrent(order);
+
+    // remove selected on other items
+    for(var i=0; i < this.itemsData.length; i++){
+      // update this components data
+      this.itemsData[i].selected = false;
+    }
+    // set this item as selected
+    this.itemsData[order].selected = true;
+    // update service items data
+    this.galleryService.setItems(this.itemsData);
+
     // thanks to the Host binding above, changing the isOpen property to true adds the "open" class to this component automatically
     this.isOpen = true;
   }
