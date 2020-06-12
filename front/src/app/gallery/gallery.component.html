@@ -1,0 +1,9 @@
+<section class="gallery-item-list">
+    <app-gallery-item
+        [class.selected]="item === selectedItem"
+        *ngFor="let item of itemsData; index as i;"
+        [item]="item"
+        (click)="onItemSelect(item)"
+    ></app-gallery-item>
+</section>
+<app-gallery-viewer [items]="itemsData" [current]="0"></app-gallery-viewer>
