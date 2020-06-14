@@ -1,4 +1,5 @@
 import { Component, OnInit } from '@angular/core';
+import { FormControl, FormGroup } from '@angular/forms';
 import {MDCTextField} from '@material/textfield';
 import { Input } from '@angular/core';
 
@@ -12,6 +13,9 @@ export class PasswordFieldComponent implements OnInit {
 
   @Input() name;
   @Input() slug;
+  @Input() parentForm: FormGroup;
+
+  control = new FormControl('');
 
   constructor() { }
 
