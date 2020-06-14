@@ -1,3 +1,4 @@
+const cors = require('cors'); 
 const express = require("express");
 const multer = require("multer");
 const uuid = require("uuid");
@@ -14,6 +15,7 @@ const session = require("express-session");
 const MySQLStore = require("express-mysql-session")(session);
 const mimetype = require("mime-types");
 const app = express();
+app.use(cors());
 const port = config.get("port");
 
 const imageType = [
@@ -91,7 +93,7 @@ app.use(session({
     saveUninitialized: false,
     cookie: {
         httpOnly: false,
-        sameSite: true,
+        sameSite: false,
         secure: config.get("session.cookiesecure")
     },
     store: sessionStore,
@@ -365,7 +367,7 @@ app.post("/register", jsonparser, function (req, res, next) {
                 }
             });
 
-            res.status(201).jsonjson({ status: "ok" });
+            res.status(201).json({ status: "ok" });
 
             logger.info(`${req.ip} sucessfully registered : `);
             logger.debug(JSON.stringify(user));
@@ -388,7 +390,7 @@ app.post("/login", jsonparser, function (req, res, next) {
 
         if (results.length <= 0) {
             logger.warn(`User : ${username} not found !`);
-            res.statusCode(403).json({ status: "error", message: "Invalid user or password" })
+            res.status.json({ status: "error", message: "Invalid user or password" })
         } else {
             argon2.verify(results[0].password, password).then(result => {
                 if (result) {
@@ -399,7 +401,7 @@ app.post("/login", jsonparser, function (req, res, next) {
                     next();
                 } else {
                     logger.warn(`User : ${username} password mismatch`);
-                    res.statusCode(403).json({ status: "error", message: "Invalid user or password" })
+                    res.status.json({ status: "error", message: "Invalid user or password" })
                 }
             }).catch(err => {
                 logger.error(err);
