@@ -390,7 +390,7 @@ app.post("/login", jsonparser, function (req, res, next) {
 
         if (results.length <= 0) {
             logger.warn(`User : ${username} not found !`);
-            res.status.json({ status: "error", message: "Invalid user or password" })
+            res.status(403).json({ status: "error", message: "Invalid user or password" })
         } else {
             argon2.verify(results[0].password, password).then(result => {
                 if (result) {
@@ -401,7 +401,7 @@ app.post("/login", jsonparser, function (req, res, next) {
                     next();
                 } else {
                     logger.warn(`User : ${username} password mismatch`);
-                    res.status.json({ status: "error", message: "Invalid user or password" })
+                    res.status(403).json({ status: "error", message: "Invalid user or password" })
                 }
             }).catch(err => {
                 logger.error(err);
