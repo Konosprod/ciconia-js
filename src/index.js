@@ -11,10 +11,13 @@ const path = require("path");
 const config = require("config");
 const winston = require("winston");
 const session = require("express-session");
-const MySQLStore = require("express-mysql-session")(session);
+const jwt = require("jsonwebtoken");
+//const MySQLStore = require("express-mysql-session")(session);
 const mimetype = require("mime-types");
 const app = express();
 const port = config.get("port");
+
+const RSA_PRIV_KEY = fs.readFileSync("config/jwtRS256.key");
 
 const imageType = [
     "image/jpeg",
@@ -24,6 +27,7 @@ const imageType = [
     "image/gif"
 ];
 
+/*
 const storeOptions = {
     schema: {
         tableName: 'sessions',
@@ -39,7 +43,7 @@ const storeOptions = {
     expiration: 86400000,
     createDatabaseTable: true
 }
-
+*/
 
 const jsonparser = bodyparser.json();
 
@@ -81,11 +85,11 @@ connection.connect(function (err) {
     }
 });
 
-const sessionStore = new MySQLStore(storeOptions, connection)
+//const sessionStore = new MySQLStore(storeOptions, connection)
 
 app.set("trust proxy", 1);
 
-app.use(session({
+/*app.use(session({
     secret: config.get("session.secret"),
     resave: false,
     saveUninitialized: false,
@@ -96,7 +100,7 @@ app.use(session({
     },
     store: sessionStore,
     unset: 'destroy'
-}))
+}))*/
 
 const storage = multer.diskStorage({
     destination: function (req, file, cb) {
@@ -388,18 +392,29 @@ app.post("/login", jsonparser, function (req, res, next) {
 
         if (results.length <= 0) {
             logger.warn(`User : ${username} not found !`);
-            res.statusCode(403).json({ status: "error", message: "Invalid user or password" })
+            res.json({ status: "error", message: "Invalid user or password" })
         } else {
             argon2.verify(results[0].password, password).then(result => {
                 if (result) {
-                    req.session.logged = true;
+                    /*req.session.logged = true;
                     req.session.uid = results[0].id;
                     req.session.key = results[0].apikey;
                     res.json({ status: "ok" });
-                    next();
+                    next();*/
+                    const jwtBearerToken = jwt.sign({}, RSA_PRIV_KEY, {
+                        algorithm: "RS256",
+                        expiresIn: 84600,
+                        subject: results[0].id.toString()
+                    })
+
+                    res.status(200).json({
+                        idToken: jwtBearerToken,
+                        expiresIn: 84600
+                    });
+
                 } else {
                     logger.warn(`User : ${username} password mismatch`);
-                    res.statusCode(403).json({ status: "error", message: "Invalid user or password" })
+                    res.status(403).json({ status: "error", message: "Invalid user or password" })
                 }
             }).catch(err => {
                 logger.error(err);
