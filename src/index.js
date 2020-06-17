@@ -1,4 +1,3 @@
-const cors = require('cors'); 
 const express = require("express");
 const multer = require("multer");
 const uuid = require("uuid");
@@ -16,7 +15,6 @@ const jwt = require("jsonwebtoken");
 //const MySQLStore = require("express-mysql-session")(session);
 const mimetype = require("mime-types");
 const app = express();
-app.use(cors());
 const port = config.get("port");
 
 const RSA_PRIV_KEY = fs.readFileSync("config/jwtRS256.key");
