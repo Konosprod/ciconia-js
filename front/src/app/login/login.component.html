@@ -1,8 +1,10 @@
-<header>Welcome Back !</header>
-<p>Please login access your file library</p>
-<app-text-field [name]="'Email'"></app-text-field>
-<app-password-field [name]="'Password'"></app-password-field>
-<a routerLink="forgot-password">Forgot your password ?</a>
-<app-checkbox [name]="'Remember me'"></app-checkbox>
-<app-button [name]="'Login'"></app-button>
-<p>Don't have an account ? <a routerLink="/signup">Create one here !</a></p>
+<form [formGroup]="loginForm">
+    <header>Welcome Back !</header>
+    <p>Please login access your file library</p>
+    <app-text-field [name]="'Username'" [parentForm]="loginForm"></app-text-field>
+    <app-password-field [name]="'Password'" [parentForm]="loginForm"></app-password-field>
+    <a routerLink="forgot-password">Forgot your password ?</a>
+    <app-checkbox [name]="'Remember me'"></app-checkbox>
+    <app-button [name]="'Login'" (click)="login()"></app-button>
+    <p>Don't have an account ? <a routerLink="/signup">Create one here !</a></p>
+</form>

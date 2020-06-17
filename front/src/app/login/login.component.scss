@@ -1,11 +1,16 @@
 :host {
-    border: 2px solid dimgray;
-    display: block;
-    padding: 20px;
-    background-color:white;
-    max-width:450px;
     display:flex;
     flex-flow:column;
     align-items:center;
     justify-content:center;
+    form{
+        border: 2px solid dimgray;
+        padding: 20px;
+        background-color:white;
+        max-width:450px;
+        display:flex;
+        flex-flow:column;
+        align-items:center;
+        justify-content:center;
+    }
 }
