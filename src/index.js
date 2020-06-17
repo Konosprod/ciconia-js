@@ -12,12 +12,17 @@ const config = require("config");
 const winston = require("winston");
 const session = require("express-session");
 const jwt = require("jsonwebtoken");
-//const MySQLStore = require("express-mysql-session")(session);
+const expressJwt = require("express-jwt");
 const mimetype = require("mime-types");
 const app = express();
 const port = config.get("port");
 
 const RSA_PRIV_KEY = fs.readFileSync("config/jwtRS256.key");
+const RSA_PUBLIC_KEY = fs.readFileSync("config/jwtRS256.key.pub");
+
+const checkIfAuthenticated = expressJwt({
+    secret: RSA_PUBLIC_KEY
+})
 
 const imageType = [
     "image/jpeg",
@@ -27,23 +32,6 @@ const imageType = [
     "image/gif"
 ];
 
-/*
-const storeOptions = {
-    schema: {
-        tableName: 'sessions',
-        columnNames: {
-            session_id: "session_id",
-            expires: "expires",
-            data: "data"
-        }
-    },
-    endConnectionOnClose: true,
-    clearExpired: true,
-    checkExpirationInterval: 90000,
-    expiration: 86400000,
-    createDatabaseTable: true
-}
-*/
 
 const jsonparser = bodyparser.json();
 
@@ -84,23 +72,6 @@ connection.connect(function (err) {
         throw err;
     }
 });
-
-//const sessionStore = new MySQLStore(storeOptions, connection)
-
-app.set("trust proxy", 1);
-
-/*app.use(session({
-    secret: config.get("session.secret"),
-    resave: false,
-    saveUninitialized: false,
-    cookie: {
-        httpOnly: false,
-        sameSite: false,
-        secure: config.get("session.cookiesecure")
-    },
-    store: sessionStore,
-    unset: 'destroy'
-}))*/
 
 const storage = multer.diskStorage({
     destination: function (req, file, cb) {
@@ -174,10 +145,6 @@ const authentication = function (req, res, next) {
                 next();
             }
         })
-        //Authenticate via session
-    } else if (req.session.hasOwnProperty("logged") && req.session.logged == true) {
-        next();
-
     } else {
         var err = new Error(`${req.ip} tried to access ${req.originalUrl} without being authenticated`)
         err.statusCode = 403;
@@ -396,12 +363,8 @@ app.post("/login", jsonparser, function (req, res, next) {
         } else {
             argon2.verify(results[0].password, password).then(result => {
                 if (result) {
-                    /*req.session.logged = true;
-                    req.session.uid = results[0].id;
-                    req.session.key = results[0].apikey;
-                    res.json({ status: "ok" });
-                    next();*/
-                    const jwtBearerToken = jwt.sign({}, RSA_PRIV_KEY, {
+
+                    const jwtBearerToken = jwt.sign({key:results[0].apikey}, RSA_PRIV_KEY, {
                         algorithm: "RS256",
                         expiresIn: 84600,
                         subject: results[0].id.toString()
@@ -426,58 +389,49 @@ app.post("/login", jsonparser, function (req, res, next) {
 })
 
 app.get("/logout", jsonparser, function (req, res, next) {
-    req.session.destroy((err) => {
+    res.json({what:"what"});
+})
+
+app.post("/gallery", checkIfAuthenticated, jsonparser, function (req, res, next) {
+
+    let sql = mysql.format("SELECT url, mime FROM push WHERE owner = ? ORDER BY id DESC LIMIT ? OFFSET ?", [req.user.sub, req.body.limit, req.body.offset]);
+
+    connection.query(sql, function (err, result) {
+        if (err) {
+            logger.error(err);
+            next(err);
+        } else {
+            res.json(result);
+        }
+    })
+})
+
+app.post("/api", checkIfAuthenticated, jsonparser, function (req, res, next) {
+    var newkey = uuid.v4();
+    var oldkey = req.user.key;
+
+    var sql = mysql.format("UPDATE users SET apikey = ? WHERE id = ?", [newkey, req.user.sub]);
+
+    connection.query(sql, function (err, results) {
         if (err) {
             logger.error(err);
             next(err);
         }
 
-        res.redirect("/");
+        fs.renameSync(path.join(path.resolve(config.get("base_upload_directory")), oldkey), path.join(path.resolve(config.get("base_upload_directory")), newkey));
+
+        const jwtBearerToken = jwt.sign({ key: newkey }, RSA_PRIV_KEY, {
+            algorithm: "RS256",
+            expiresIn: 84600,
+            subject: req.user.sub
+        })
+
+        res.status(200).json({
+            idToken: jwtBearerToken,
+            expiresIn: 84600
+        });
     })
-})
 
-app.post("/gallery", authentication, jsonparser, function (req, res, next) {
-
-    if (!req.body.hasOwnProperty("limit") || !req.body.hasOwnProperty("offset") || !req.session.hasOwnProperty("uid")) {
-        logger.warn("Bad request");
-        res.sendStatus(400);
-    } else {
-        let sql = mysql.format("SELECT url, mime FROM push WHERE owner = ? ORDER BY id DESC LIMIT ? OFFSET ?", [req.session.uid, req.body.limit, req.body.offset]);
-
-        connection.query(sql, function (err, result) {
-            if (err) {
-                logger.error(err);
-                next(err);
-            } else {
-                res.json(result);
-            }
-        })
-    }
-})
-
-app.post("/api", authentication, jsonparser, function(req, res, next) {
-    var newkey = uuid.v4();
-    var oldkey = req.session.key;
-
-    if(req.session.hasOwnProperty("uid")) {
-        var sql = mysql.format("UPDATE users SET apikey = ? WHERE id = ?", [newkey, req.session.uid]);
-
-        connection.query(sql, function(err, results) {
-            if(err) {
-                logger.error(err);
-                next(err);
-            }
-
-            fs.renameSync(path.join(path.resolve(config.get("base_upload_directory")), oldkey), path.join(path.resolve(config.get("base_upload_directory")), newkey));
-            req.session.key = newkey;
-            
-            res.json({status: "ok", key: newkey});
-        })
-
-    } else {
-        res.sendStatus(403);
-        next();
-    }
 })
 
 app.get('*', function (req, res) {
