@@ -5,6 +5,8 @@ import { Injectable } from '@angular/core';
 })
 export class GalleryService {
 
+  items = [];
+
   constructor() { }
 
   /**
@@ -74,5 +76,19 @@ export class GalleryService {
         type: "image"
       }
     ]
+  }
+
+  setItems(items){
+    this.items = items;
+  }
+
+  setItem(item, k){
+    if(typeof k != "number" && k%1 == 0){
+      throw "argument k of GalleryService.setItem must be integer"
+    }
+    if(typeof this.items[k] == "undefined"){
+      throw "error, trying to set item on undefined index " + k + " to GalleryService.items ("+this.items.length+") in GalleryService.setItem";
+    }
+    this.items[k] = item;
   }
 }
