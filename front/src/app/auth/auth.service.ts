@@ -1,7 +1,8 @@
 import { Injectable } from '@angular/core';
 import { Observable, of } from 'rxjs';
 import { tap, delay } from 'rxjs/operators';
-import { HttpClient } from '@angular/common/http';
+import { HttpClient, HttpErrorResponse } from '@angular/common/http';
+import * as moment from "moment";
 
 @Injectable({
   providedIn: 'root'
@@ -10,8 +11,6 @@ import { HttpClient } from '@angular/common/http';
 export class AuthService {
   constructor(private http:HttpClient){
   }
-
-  isLoggedIn = false;
 
   // store the URL so we can redirect after logging in
   redirectUrl: string;
@@ -22,17 +21,35 @@ export class AuthService {
     var apiUrl = exploded.join(':');
     apiUrl += ":3000";
     
-    let res = this.http.post(
+    return this.http.post(
       apiUrl + '/login',
       {
         "username":username,
         "password":password
       }
     );
-    return res;
   }
 
-  logout(): void {
-    this.isLoggedIn = false;
+  public setSession(authResult) {
+    const expiresAt = moment().add(authResult.expiresIn,'second');
+
+    localStorage.setItem('id_token', authResult.idToken);
+    localStorage.setItem("expires_at", JSON.stringify(expiresAt.valueOf()) );
+  }
+
+  public isLoggedIn() {
+    console.log("is logged in ?", moment().isBefore(this.getExpiration()));
+    return moment().isBefore(this.getExpiration());
+  }
+
+  getExpiration() {
+    const expiration = localStorage.getItem("expires_at");
+    const expiresAt = JSON.parse(expiration);
+    return moment(expiresAt);
+  }
+
+  logout() {
+      localStorage.removeItem("id_token");
+      localStorage.removeItem("expires_at");
   }
 }

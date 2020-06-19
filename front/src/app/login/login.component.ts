@@ -1,7 +1,9 @@
 import { Component, OnInit } from '@angular/core';
 import { FormBuilder, FormGroup, FormControl, Validators, FormsModule, ReactiveFormsModule } from '@angular/forms';
+import { HttpClient, HttpErrorResponse } from '@angular/common/http';
 import { AuthService } from '../auth/auth.service';
 import { Router } from '@angular/router';
+import Swal from 'sweetalert2';
 import * as mdc from 'material-components-web';
 
 
@@ -25,6 +27,11 @@ export class LoginComponent implements OnInit {
   ) {}
 
   ngOnInit(): void {
+    // redirect to gallery if already logged in
+    if( this.authService.isLoggedIn() ){
+      this.router.navigate(['/gallery']);
+    }
+
     // init form
     this.loginForm = this.fb.group({
       username: ['',Validators.required],
@@ -41,21 +48,38 @@ export class LoginComponent implements OnInit {
     const val = this.loginForm.value;
 
     if (val.username && val.password) {
-      this.authService.login(val.username, val.password)
-        .subscribe(
-          (res) => {
-            let r = <any>{};
-            r = res;
-            if(r.status == "ok"){
-              this.authService.isLoggedIn = true;
-              this.router.navigate(['/gallery']);
-            }
-            else{
-              alert('bad credentials');
-            }
-          }
+      let req = this.authService.login(val.username, val.password);
+      req.subscribe(
+        res => {
+          this.authService.setSession(res);
+          this.router.navigate(['/gallery']);
+          Swal.fire({
+            title: 'Login successful!',
+            icon: 'success',
+            timer:2000,
+            showCancelButton: false,
+            showConfirmButton: false
+          });
+          
+        },
+        (error: HttpErrorResponse) => {
+          this.wrongLogin();
+        }
       );
     }
+  }
+
+  wrongLogin(){
+    // fire alert
+    Swal.fire({
+      title: 'Login failed...',
+      html: `
+        You have either your username or password wrong !<br>
+        You can always <a href='/signup'>create an account</a> if you don't have one...
+      `,
+      icon: 'error',
+      confirmButtonText: 'Ok'
+    });
   }
 
 }
