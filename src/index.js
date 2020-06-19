@@ -11,10 +11,12 @@ const path = require("path");
 const config = require("config");
 const winston = require("winston");
 const session = require("express-session");
+var cors = require('cors')
 const jwt = require("jsonwebtoken");
 const expressJwt = require("express-jwt");
 const mimetype = require("mime-types");
 const app = express();
+app.use(cors())
 const port = config.get("port");
 
 const RSA_PRIV_KEY = fs.readFileSync("config/jwtRS256.key");
