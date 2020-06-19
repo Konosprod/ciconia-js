@@ -13,3 +13,27 @@
 .mdc-top-app-bar{
     transition:0.5s;
 }
+
+.app-menu{
+    position:absolute;
+    z-index:100;
+    top:40px;
+    right:36px;
+    display:flex;
+    flex-flow:column;
+    background-color:#f0f0f0;
+    box-shadow: 1px 1px 8px #0000007a;
+
+    a{
+        display:block;
+        padding:10px 30px;
+        color:grey;
+        text-decoration:none;
+        transition:0.3s;
+
+        &:hover{
+            color:#333;
+            background-color:white;
+        }
+    }
+}

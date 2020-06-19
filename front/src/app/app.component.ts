@@ -9,10 +9,12 @@ import * as mdc from 'material-components-web';
 })
 export class AppComponent {
   title = 'front';
+  menuOpen: boolean;
 
   constructor() {}
 
   ngOnInit() {
+    this.menuOpen = false;
     // Instantiating material top bar
     const topAppBarElement = document.querySelector('.mdc-top-app-bar');
     const topAppBar = new MDCTopAppBar(topAppBarElement);

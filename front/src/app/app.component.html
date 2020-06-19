@@ -5,8 +5,11 @@
             <span class="mdc-top-app-bar__title">Cicnonia</span>
         </section>
         <section class="mdc-top-app-bar__section mdc-top-app-bar__section--align-end" role="toolbar">
-            <button class="material-icons mdc-top-app-bar__action-item mdc-icon-button" aria-label="Options">more_vert</button>
+            <button (click)="menuOpen = !menuOpen" class="material-icons mdc-top-app-bar__action-item mdc-icon-button" aria-label="Options">more_vert</button>
         </section>
+        <nav *ngIf="menuOpen" class="app-menu">
+            <a (click)="menuOpen = false;" routerLink="/logout">Logout</a>
+        </nav>
     </div>
 </header>
 <section class="app-body no-select">

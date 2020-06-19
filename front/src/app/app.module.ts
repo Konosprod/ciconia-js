@@ -15,6 +15,7 @@ import { GalleryComponent } from './gallery/gallery.component';
 import { NotFoundComponent } from './not-found/not-found.component';
 import { GalleryItemComponent } from './gallery/gallery-item/gallery-item.component';
 import { GalleryViewerComponent } from './gallery/gallery-viewer/gallery-viewer.component';
+import { LogoutComponent } from './logout/logout.component';
 
 @NgModule({
    declarations: [
@@ -28,7 +29,8 @@ import { GalleryViewerComponent } from './gallery/gallery-viewer/gallery-viewer.
       GalleryComponent,
       NotFoundComponent,
       GalleryItemComponent,
-      GalleryViewerComponent
+      GalleryViewerComponent,
+      LogoutComponent
    ],
    imports: [
       BrowserModule,
