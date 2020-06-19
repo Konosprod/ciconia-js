@@ -8,14 +8,15 @@ Check if you have a mysql server up and running on your machine
 `sudo service mysql status`
 if you don't, follow [this link](https://linuxize.com/post/how-to-install-mariadb-on-ubuntu-18-04/) to install one
 
-You also need latest node, npm, and curl for later config.
+You also need latest node, yarn, and curl for later config.
 The following should be enough on most systems.
 ```
 sudo apt update
 sudo apt install nodejs
-sudo apt install npm
 sudo apt install curl
 ```
+**TODO**
+installation guide for yarn
 
 ## Setting up the database
 
@@ -65,7 +66,7 @@ then, create a user to login to the app like so
 
 You can also use a tool like [Insomnia](https://insomnia.rest/) if you prefer (recommended for debugging).
 
-Lastly, `npm install`
+Lastly, `yarn install`
 
 ## Setting up Angular
 
@@ -89,7 +90,7 @@ try reinstalling angular globally after this, and it should work fine.
 Lastly, do :
 ```
 cd front
-npm install
+yarn install
 cd ../
 ```
 
