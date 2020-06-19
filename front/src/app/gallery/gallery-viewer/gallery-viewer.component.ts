@@ -32,7 +32,6 @@ export class GalleryViewerComponent implements OnInit {
    */
   nextItem(){
     this.setCurrent(this.current + 1);
-    console.log(this.current);
   }
 
   /**
@@ -41,7 +40,6 @@ export class GalleryViewerComponent implements OnInit {
    */
   prevItem(){
     this.setCurrent(this.current - 1);
-    console.log(this.current);
   }
 
   /**
