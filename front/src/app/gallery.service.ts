@@ -1,4 +1,6 @@
 import { Injectable } from '@angular/core';
+import { HttpClient } from '@angular/common/http';
+import { Observable } from 'rxjs';
 
 @Injectable({
   providedIn: 'root'
@@ -7,75 +9,31 @@ export class GalleryService {
 
   items = [];
 
-  constructor() { }
+  constructor(private http:HttpClient) { }
 
   /**
    * Talks with ciconia api to get files to display in gallery.
    * Returns only dummy data for now
    */
-  getItems(){
-    return [
-      {
-        id: 0,
-        url: "http://placekitten.com/1920/1080",
-        thumb: "http://placekitten.com/300/300",
-        type: "image"
-      },
-      {
-        id: 1,
-        url: "http://placekitten.com/1920/1080",
-        thumb: "http://placekitten.com/300/300",
-        type: "image"
-      },
-      {
-        id: 2,
-        url: "http://placekitten.com/1920/1080",
-        thumb: "http://placekitten.com/300/300",
-        type: "image"
-      },
-      {
-        id: 3,
-        url: "http://placekitten.com/1920/1080",
-        thumb: "http://placekitten.com/300/300",
-        type: "image"
-      },
-      {
-        id: 4,
-        url: "http://placekitten.com/1920/1080",
-        thumb: "http://placekitten.com/300/300",
-        type: "image"
-      },
-      {
-        id: 5,
-        url: "http://placekitten.com/1920/1080",
-        thumb: "http://placekitten.com/300/300",
-        type: "image"
-      },
-      {
-        id: 6,
-        url: "http://placekitten.com/1920/1080",
-        thumb: "http://placekitten.com/300/300",
-        type: "image"
-      },
-      {
-        id: 7,
-        url: "http://placekitten.com/1920/1080",
-        thumb: "http://placekitten.com/300/300",
-        type: "image"
-      },
-      {
-        id: 8,
-        url: "http://placekitten.com/1920/1080",
-        thumb: "http://placekitten.com/300/300",
-        type: "image"
-      },
-      {
-        id: 9,
-        url: "http://placekitten.com/1920/1080",
-        thumb: "http://placekitten.com/300/300",
-        type: "image"
-      }
-    ]
+  getItems() {
+    this.http.post<any>("http://localhost:3000/gallery", {"limit": 15, "offset": 0}).subscribe(data => {
+      let files = []
+      let i = 0;
+      data.forEach(element => {
+        let img = {
+          id: i,
+          url: "http://localhost:3000/push/" + element.url,
+          thumb: "http://localhost:3000/thumbs/" + element.url,
+          type: element.mime
+        }
+        i++;
+
+        this.items.push(img);
+      });
+    });
+
+    return this.items;
+   
   }
 
   setItems(items){
