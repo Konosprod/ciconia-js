@@ -1,6 +1,6 @@
 <div class="gallery-viewer-wrapper">
     <div class="prev-button" (click)="prevItem()"></div>
-    <img id="image-{{itemsData[current].id}}" src="{{itemsData[current].url}}" alt="">
+    <img id="image-{{itemsData[current]?.id}}" src="{{itemsData[current]?.url}}" alt="">
     <div class="next-button" (click)="nextItem()"></div>
 </div>
 <div class="close-viewer" (click)="close()"></div>
