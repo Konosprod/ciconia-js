@@ -6,4 +6,7 @@
         (click)="onItemSelect(i)"
     ></app-gallery-item>
 </section>
+<section layout="row" layout-aling="center center" layout-wrap>
+    <app-button *ngIf="hasMore" [name]="'More'" (click)="morePage()"></app-button>
+</section>
 <app-gallery-viewer [current]="0"></app-gallery-viewer>

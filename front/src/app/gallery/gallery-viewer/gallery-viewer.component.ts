@@ -1,5 +1,4 @@
 import { Component, OnInit, Input, HostBinding } from '@angular/core';
-import {GalleryService} from '../../gallery.service'
 
 @Component({
   selector: 'app-gallery-viewer',
@@ -13,17 +12,15 @@ export class GalleryViewerComponent implements OnInit {
   @HostBinding('class.open') public isOpen = false; // setting this add/removes 'selected' class
 
   @Input() current;
-  itemsData = []; // data returned by service that fetches the items to display from the api
+  @Input() itemsData = []; // data returned by service that fetches the items to display from the api
 
   constructor(
-    private galleryService: GalleryService // inject gallery service service by adding it to constructor (talks with ciconia api to fetch items to display). otherwise, it won't be available in other methods
   ) { }
 
   ngOnInit(): void {
     // init viewer as closed
     this.isOpen = false;
     // fetch data from ciconia gallery service
-    this.itemsData = this.galleryService.getItems();
   }
 
   /**
@@ -73,8 +70,6 @@ export class GalleryViewerComponent implements OnInit {
     }
     // set this item as selected
     this.itemsData[order].selected = true;
-    // update service items data
-    this.galleryService.setItems(this.itemsData);
 
     // thanks to the Host binding above, changing the isOpen property to true adds the "open" class to this component automatically
     this.isOpen = true;
