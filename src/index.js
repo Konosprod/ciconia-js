@@ -23,7 +23,8 @@ const RSA_PRIV_KEY = fs.readFileSync("config/jwtRS256.key");
 const RSA_PUBLIC_KEY = fs.readFileSync("config/jwtRS256.key.pub");
 
 const checkIfAuthenticated = expressJwt({
-    secret: RSA_PUBLIC_KEY
+    secret: RSA_PUBLIC_KEY,
+    algorithms: ['RS256']
 })
 
 const imageType = [
