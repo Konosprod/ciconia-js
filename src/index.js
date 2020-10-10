@@ -59,22 +59,31 @@ const logger = winston.createLogger({
     ]
 })
 
-const connection = mysql.createConnection({
+var connection = mysql.createPool({
+    host: config.get("db.host"),
+    user: config.get("db.user"),
+    password: config.get("db.password"),
+    database: config.get("db.database"),
+    multipleStatements: true,
+    connectionLimit: 10
+})
+
+/*const connection = mysql.createConnection({
     host: config.get("db.host"),
     user: config.get("db.user"),
     password: config.get("db.password"),
     database: config.get("db.database"),
     multipleStatements: true
-});
+});*/
 
 const basename = config.get("baseurl");
 
-connection.connect(function (err) {
+/*connection.connect(function (err) {
     if (err) {
         logger.error(err)
         throw err;
     }
-});
+});*/
 
 const storage = multer.diskStorage({
     destination: function (req, file, cb) {
