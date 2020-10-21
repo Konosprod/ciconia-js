@@ -4,6 +4,10 @@ New implementation for my Ciconia service, nodejs inside because why not.
 
 ## Presquisites
 
+**Don't forget to use**
+`git submodule update --init --recursive`
+**if you want to use the angular front end**
+
 Check if you have a mysql server up and running on your machine
 `sudo service mysql status`
 if you don't, follow [this link](https://linuxize.com/post/how-to-install-mariadb-on-ubuntu-18-04/) to install one
