@@ -25,5 +25,8 @@
     "sharp": "^0.26.2",
     "uuid": "^8.3.1",
     "winston": "^3.3.3"
+  },
+  "devDependencies": {
+    "yarn-upgrade-all": "^0.6.1"
   }
 }
